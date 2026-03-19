@@ -1,0 +1,52 @@
+package lk.ijse.eca.customerservice.dto;
+
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Min;
+import lk.ijse.eca.customerservice.entity.Customer;
+import lk.ijse.eca.customerservice.validation.ValidImage;
+import lombok.Getter;
+import lombok.Setter;
+import org.springframework.web.multipart.MultipartFile;
+
+@Getter
+@Setter
+public class CustomerRequestDTO {
+
+    public interface OnCreate {}
+
+    @NotBlank(groups = OnCreate.class, message = "Customer ID is required")
+    @Pattern(groups = OnCreate.class, regexp = "^[A-Z0-9]{6,10}$", message = "Customer ID must be 6-10 alphanumeric characters")
+    private String customerId;
+
+    @NotBlank(message = "Name is required")
+    @Pattern(regexp = "^[a-zA-Z][a-zA-Z ]*$", message = "Name can only contain letters and spaces")
+    private String name;
+
+    @NotBlank(message = "Address is required")
+    private String address;
+
+    @NotBlank(message = "Mobile is required")
+    @Pattern(regexp = "^[0-9]{10}$", message = "Mobile must be 10 digits")
+    private String mobile;
+
+    @Email(message = "Invalid email format")
+    private String email;
+
+    @NotNull(groups = OnCreate.class, message = "Picture is required")
+    @ValidImage
+    private MultipartFile picture;
+
+    @NotNull(message = "Customer type is required")
+    private Customer.CustomerType customerType;
+
+    @Min(value = 0, message = "Loyalty points cannot be negative")
+    private Integer loyaltyPoints = 0;
+
+    private String preferredPaymentMethod;
+
+    @Min(value = 0, message = "Total purchases cannot be negative")
+    private Double totalPurchases = 0.0;
+}
