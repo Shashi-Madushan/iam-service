@@ -30,8 +30,6 @@ public class UserController {
 
     private final UserService userService;
 
-    private static final String USER_ID_REGEXP = "^[A-Z0-9]{6,10}$";
-
     @PostMapping(
             consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE
@@ -43,11 +41,11 @@ public class UserController {
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-    @GetMapping(value = "/{userId}", produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<UserResponseDTO> getUser(
-            @PathVariable @Pattern(regexp = USER_ID_REGEXP, message = "User ID must be 6-10 alphanumeric characters") String userId) {
-        log.info("GET /api/v1/users/{}", userId);
-        UserResponseDTO response = userService.getUser(userId);
+            @PathVariable Long id) {
+        log.info("GET /api/v1/users/{}", id);
+        UserResponseDTO response = userService.getUser(id);
         return ResponseEntity.ok(response);
     }
 
@@ -67,23 +65,23 @@ public class UserController {
     }
 
     @PutMapping(
-            value = "/{userId}",
+            value = "/{id}",
             consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE
     )
     public ResponseEntity<UserResponseDTO> updateUser(
-            @PathVariable @Pattern(regexp = USER_ID_REGEXP, message = "User ID must be 6-10 alphanumeric characters") String userId,
+            @PathVariable Long id,
             @Valid @RequestBody UserRequestDTO dto) {
-        log.info("PUT /api/v1/users/{}", userId);
-        UserResponseDTO response = userService.updateUser(userId, dto);
+        log.info("PUT /api/v1/users/{}", id);
+        UserResponseDTO response = userService.updateUser(id, dto);
         return ResponseEntity.ok(response);
     }
 
-    @DeleteMapping("/{userId}")
+    @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteUser(
-            @PathVariable @Pattern(regexp = USER_ID_REGEXP, message = "User ID must be 6-10 alphanumeric characters") String userId) {
-        log.info("DELETE /api/v1/users/{}", userId);
-        userService.deleteUser(userId);
+            @PathVariable Long id) {
+        log.info("DELETE /api/v1/users/{}", id);
+        userService.deleteUser(id);
         return ResponseEntity.noContent().build();
     }
 
@@ -151,20 +149,20 @@ public class UserController {
         return ResponseEntity.ok(users);
     }
 
-    @PutMapping("/{userId}/status")
+    @PutMapping("/{id}/status")
     public ResponseEntity<Void> updateUserStatus(
-            @PathVariable @Pattern(regexp = USER_ID_REGEXP, message = "User ID must be 6-10 alphanumeric characters") String userId,
+            @PathVariable Long id,
             @RequestParam User.UserStatus status) {
-        log.info("PUT /api/v1/users/{}/status?status={}", userId, status);
-        userService.updateUserStatus(userId, status);
+        log.info("PUT /api/v1/users/{}/status?status={}", id, status);
+        userService.updateUserStatus(id, status);
         return ResponseEntity.ok().build();
     }
 
-    @PutMapping("/{userId}/login")
+    @PutMapping("/{id}/login")
     public ResponseEntity<Void> recordUserLogin(
-            @PathVariable @Pattern(regexp = USER_ID_REGEXP, message = "User ID must be 6-10 alphanumeric characters") String userId) {
-        log.info("PUT /api/v1/users/{}/login", userId);
-        userService.recordUserLogin(userId);
+            @PathVariable Long id) {
+        log.info("PUT /api/v1/users/{}/login", id);
+        userService.recordUserLogin(id);
         return ResponseEntity.ok().build();
     }
 
@@ -200,13 +198,13 @@ public class UserController {
         return ResponseEntity.ok(exists);
     }
 
-    @PutMapping("/{userId}/password")
+    @PutMapping("/{id}/password")
     public ResponseEntity<Void> changePassword(
-            @PathVariable @Pattern(regexp = USER_ID_REGEXP, message = "User ID must be 6-10 alphanumeric characters") String userId,
+            @PathVariable Long id,
             @RequestParam String oldPassword,
             @RequestParam String newPassword) {
-        log.info("PUT /api/v1/users/{}/password", userId);
-        userService.changePassword(userId, oldPassword, newPassword);
+        log.info("PUT /api/v1/users/{}/password", id);
+        userService.changePassword(id, oldPassword, newPassword);
         return ResponseEntity.ok().build();
     }
 }

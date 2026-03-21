@@ -107,7 +107,7 @@ public class CustomerController {
     @PutMapping("/{customerId}/purchases")
     public ResponseEntity<Void> updateTotalPurchases(
             @PathVariable @Pattern(regexp = CUSTOMER_ID_REGEXP, message = "Customer ID must be 6-10 alphanumeric characters") String customerId,
-            @RequestParam @Min(value = 0.1, message = "Purchase amount must be positive") Double purchaseAmount) {
+            @RequestParam @Min(value = 1, message = "Purchase amount must be positive") Double purchaseAmount) {
         log.info("PUT /api/v1/customers/{}/purchases?purchaseAmount={}", customerId, purchaseAmount);
         customerService.updateTotalPurchases(customerId, purchaseAmount);
         return ResponseEntity.ok().build();

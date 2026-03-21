@@ -12,13 +12,13 @@ public interface UserService {
 
     UserResponseDTO createUser(UserRequestDTO dto);
 
-    UserResponseDTO getUser(String userId);
+    UserResponseDTO getUser(Long id);
 
     UserResponseDTO getUserByUsername(String username);
 
-    UserResponseDTO updateUser(String userId, UserRequestDTO dto);
+    UserResponseDTO updateUser(Long id, UserRequestDTO dto);
 
-    void deleteUser(String userId);
+    void deleteUser(Long id);
 
     List<UserResponseDTO> getAllUsers();
 
@@ -34,9 +34,9 @@ public interface UserService {
 
     Page<UserResponseDTO> searchUsersByTypeAndKeyword(User.UserType userType, String keyword, Pageable pageable);
 
-    void updateUserStatus(String userId, User.UserStatus status);
+    void updateUserStatus(Long id, User.UserStatus status);
 
-    void recordUserLogin(String userId);
+    void recordUserLogin(Long id);
 
     Long getUserCountByType(User.UserType userType);
 
@@ -46,5 +46,5 @@ public interface UserService {
 
     boolean existsByEmail(String email);
 
-    void changePassword(String userId, String oldPassword, String newPassword);
+    void changePassword(Long id, String oldPassword, String newPassword);
 }

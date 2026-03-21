@@ -48,19 +48,19 @@ public class UserServiceImpl implements UserService {
         user.setPassword(passwordEncoder.encode(dto.getPassword()));
         
         User saved = userRepository.save(user);
-        log.info("User created successfully: {}", saved.getUserId());
+        log.info("User created successfully: {}", saved.getId());
         return userMapper.toDtoWithoutPassword(saved);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public UserResponseDTO getUser(String userId) {
-        log.debug("Fetching user with ID: {}", userId);
-        return userRepository.findById(userId)
+    public UserResponseDTO getUser(Long id) {
+        log.debug("Fetching user with ID: {}", id);
+        return userRepository.findById(id)
                 .map(userMapper::toDtoWithoutPassword)
                 .orElseThrow(() -> {
-                    log.warn("User not found: {}", userId);
-                    return new UserNotFoundException(userId);
+                    log.warn("User not found: {}", id);
+                    return new UserNotFoundException(String.valueOf(id));
                 });
     }
 
@@ -77,13 +77,13 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserResponseDTO updateUser(String userId, UserRequestDTO dto) {
-        log.debug("Updating user with ID: {}", userId);
+    public UserResponseDTO updateUser(Long id, UserRequestDTO dto) {
+        log.debug("Updating user with ID: {}", id);
 
-        User user = userRepository.findById(userId)
+        User user = userRepository.findById(id)
                 .orElseThrow(() -> {
-                    log.warn("User not found for update: {}", userId);
-                    return new UserNotFoundException(userId);
+                    log.warn("User not found for update: {}", id);
+                    return new UserNotFoundException(String.valueOf(id));
                 });
 
         // Check if username is being changed and if it's already taken
@@ -108,22 +108,22 @@ public class UserServiceImpl implements UserService {
         }
 
         User updated = userRepository.save(user);
-        log.info("User updated successfully: {}", updated.getUserId());
+        log.info("User updated successfully: {}", updated.getId());
         return userMapper.toDtoWithoutPassword(updated);
     }
 
     @Override
-    public void deleteUser(String userId) {
-        log.debug("Deleting user with ID: {}", userId);
+    public void deleteUser(Long id) {
+        log.debug("Deleting user with ID: {}", id);
 
-        User user = userRepository.findById(userId)
+        User user = userRepository.findById(id)
                 .orElseThrow(() -> {
-                    log.warn("User not found for deletion: {}", userId);
-                    return new UserNotFoundException(userId);
+                    log.warn("User not found for deletion: {}", id);
+                    return new UserNotFoundException(String.valueOf(id));
                 });
 
         userRepository.delete(user);
-        log.info("User deleted successfully: {}", userId);
+        log.info("User deleted successfully: {}", id);
     }
 
     @Override
@@ -195,33 +195,33 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public void updateUserStatus(String userId, User.UserStatus status) {
-        log.debug("Updating user {} status to: {}", userId, status);
+    public void updateUserStatus(Long id, User.UserStatus status) {
+        log.debug("Updating user {} status to: {}", id, status);
         
-        User user = userRepository.findById(userId)
+        User user = userRepository.findById(id)
                 .orElseThrow(() -> {
-                    log.warn("User not found for status update: {}", userId);
-                    return new UserNotFoundException(userId);
+                    log.warn("User not found for status update: {}", id);
+                    return new UserNotFoundException(String.valueOf(id));
                 });
 
         user.setStatus(status);
         userRepository.save(user);
-        log.info("User {} status updated to: {}", userId, status);
+        log.info("User {} status updated to: {}", id, status);
     }
 
     @Override
-    public void recordUserLogin(String userId) {
-        log.debug("Recording login for user: {}", userId);
+    public void recordUserLogin(Long id) {
+        log.debug("Recording login for user: {}", id);
         
-        User user = userRepository.findById(userId)
+        User user = userRepository.findById(id)
                 .orElseThrow(() -> {
-                    log.warn("User not found for login recording: {}", userId);
-                    return new UserNotFoundException(userId);
+                    log.warn("User not found for login recording: {}", id);
+                    return new UserNotFoundException(String.valueOf(id));
                 });
 
         user.setLastLogin(LocalDateTime.now());
         userRepository.save(user);
-        log.debug("Login recorded for user: {}", userId);
+        log.debug("Login recorded for user: {}", id);
     }
 
     @Override
@@ -251,19 +251,19 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public void changePassword(String userId, String oldPassword, String newPassword) {
-        log.debug("Changing password for user: {}", userId);
+    public void changePassword(Long id, String oldPassword, String newPassword) {
+        log.debug("Changing password for user: {}", id);
         
-        User user = userRepository.findById(userId)
+        User user = userRepository.findById(id)
                 .orElseThrow(() -> {
-                    log.warn("User not found for password change: {}", userId);
-                    return new UserNotFoundException(userId);
+                    log.warn("User not found for password change: {}", id);
+                    return new UserNotFoundException(String.valueOf(id));
                 });
 
         // In a real application, you would verify the old password here
         // For now, we'll just update with the new password
         user.setPassword(passwordEncoder.encode(newPassword));
         userRepository.save(user);
-        log.info("Password changed for user: {}", userId);
+        log.info("Password changed for user: {}", id);
     }
 }

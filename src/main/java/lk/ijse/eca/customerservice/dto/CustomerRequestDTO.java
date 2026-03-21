@@ -35,7 +35,6 @@ public class CustomerRequestDTO {
     @Email(message = "Invalid email format")
     private String email;
 
-    @NotNull(groups = OnCreate.class, message = "Picture is required")
     @ValidImage
     private MultipartFile picture;
 

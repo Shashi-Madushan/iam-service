@@ -10,19 +10,24 @@ import org.mapstruct.MappingTarget;
 import org.mapstruct.NullValuePropertyMappingStrategy;
 import org.mapstruct.ReportingPolicy;
 
-@Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.ERROR)
+@Mapper(componentModel = "spring", unmappedSourcePolicy = ReportingPolicy.IGNORE)
 public interface UserMapper {
 
     UserResponseDTO toDto(User user);
 
+    @Mapping(target = "password", ignore = true)
+    @Mapping(target = "lastLogin", ignore = true)
+    @Mapping(target = "createdAt", ignore = true)
+    @Mapping(target = "updatedAt", ignore = true)
     User toEntity(UserRequestDTO dto);
 
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
-    @Mapping(target = "userId", ignore = true)
+    @Mapping(target = "id", ignore = true)
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "updatedAt", ignore = true)
+    @Mapping(target = "password", ignore = true)
+    @Mapping(target = "lastLogin", ignore = true)
     void updateEntity(UserRequestDTO dto, @MappingTarget User user);
 
-    @Mapping(target = "password", ignore = true)
     UserResponseDTO toDtoWithoutPassword(User user);
 }

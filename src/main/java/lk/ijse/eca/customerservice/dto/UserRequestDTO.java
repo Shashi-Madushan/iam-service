@@ -19,10 +19,6 @@ public class UserRequestDTO {
 
     public interface OnUpdate {}
 
-    @NotBlank(groups = OnCreate.class, message = "User ID is required")
-    @Pattern(groups = OnCreate.class, regexp = "^[A-Z0-9]{6,10}$", message = "User ID must be 6-10 alphanumeric characters")
-    private String userId;
-
     @NotBlank(groups = OnCreate.class, message = "Username is required")
     @Size(min = 3, max = 50, message = "Username must be between 3 and 50 characters")
     @Pattern(regexp = "^[a-zA-Z0-9_]+$", message = "Username can only contain letters, numbers, and underscores")
