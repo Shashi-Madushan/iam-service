@@ -14,6 +14,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindException;
+import org.springframework.web.HttpMediaTypeNotSupportedException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
@@ -157,6 +158,24 @@ public class GlobalExceptionHandler {
         });
 
         return problemResponse(HttpStatus.UNPROCESSABLE_ENTITY, problem);
+    }
+
+    @ExceptionHandler(HttpMediaTypeNotSupportedException.class)
+    public ResponseEntity<ProblemDetail> handleMediaTypeNotSupported(
+            HttpMediaTypeNotSupportedException ex, HttpServletRequest request) {
+        log.warn("Unsupported media type: {}", ex.getContentType());
+        String supported = ex.getSupportedMediaTypes().stream()
+                .map(MediaType::toString)
+                .collect(Collectors.joining(", "));
+        String detail = String.format("Content-Type '%s' is not supported. Supported: %s",
+                ex.getContentType(), supported);
+        ProblemDetail problem = buildProblemDetail(
+                HttpStatus.UNSUPPORTED_MEDIA_TYPE,
+                "Unsupported Media Type",
+                detail,
+                request.getRequestURI());
+        problem.setProperty("supportedTypes", ex.getSupportedMediaTypes());
+        return problemResponse(HttpStatus.UNSUPPORTED_MEDIA_TYPE, problem);
     }
 
     @ExceptionHandler(Exception.class)

@@ -1,5 +1,6 @@
 package lk.ijse.eca.iamservice.service;
 
+import lk.ijse.eca.iamservice.dto.CustomerJsonRequestDTO;
 import lk.ijse.eca.iamservice.dto.CustomerRequestDTO;
 import lk.ijse.eca.iamservice.dto.CustomerResponseDTO;
 import lk.ijse.eca.iamservice.entity.Customer;
@@ -10,7 +11,11 @@ public interface CustomerService {
 
     CustomerResponseDTO createCustomer(CustomerRequestDTO dto);
 
+    CustomerResponseDTO createCustomerFromJson(CustomerJsonRequestDTO dto);
+
     CustomerResponseDTO updateCustomer(String customerId, CustomerRequestDTO dto);
+
+    CustomerResponseDTO updateCustomerFromJson(String customerId, CustomerJsonRequestDTO dto);
 
     void deleteCustomer(String customerId);
 

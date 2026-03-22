@@ -17,6 +17,8 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import lk.ijse.eca.iamservice.dto.CustomerJsonRequestDTO;
+
 
 @RestController
 @RequestMapping("/api/v1/customers")
@@ -30,28 +32,44 @@ public class CustomerController {
     private static final String CUSTOMER_ID_REGEXP = "^[A-Z0-9]{6,10}$";
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<CustomerResponseDTO> createCustomer(
+    public ResponseEntity<CustomerResponseDTO> createCustomerWithPicture(
             @Validated({Default.class, CustomerRequestDTO.OnCreate.class}) @ModelAttribute CustomerRequestDTO dto) {
-        log.info("POST /api/v1/customers - Customer ID: {}", dto.getCustomerId());
+        log.info("POST /api/v1/customers (multipart) - Customer ID: {}", dto.getCustomerId());
         CustomerResponseDTO response = customerService.createCustomer(dto);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
+    @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<CustomerResponseDTO> createCustomer(@Valid @RequestBody CustomerJsonRequestDTO dto) {
+        log.info("POST /api/v1/customers (json) - Customer ID: {}", dto.getCustomerId());
+        CustomerResponseDTO response = customerService.createCustomerFromJson(dto);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
+
     @PutMapping(value = "/{customerId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<CustomerResponseDTO> updateCustomer(
+    public ResponseEntity<CustomerResponseDTO> updateCustomerWithPicture(
             @PathVariable @Pattern(regexp = CUSTOMER_ID_REGEXP, message = "Customer ID must be 6-10 alphanumeric characters") String customerId,
             @Valid @ModelAttribute CustomerRequestDTO dto) {
-        log.info("PUT /api/v1/customers/{}", customerId);
+        log.info("PUT /api/v1/customers/{} (multipart)", customerId);
         CustomerResponseDTO response = customerService.updateCustomer(customerId, dto);
         return ResponseEntity.ok(response);
     }
 
+    @PutMapping(value = "/{customerId}", consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<CustomerResponseDTO> updateCustomer(
+            @PathVariable @Pattern(regexp = CUSTOMER_ID_REGEXP, message = "Customer ID must be 6-10 alphanumeric characters") String customerId,
+            @Valid @RequestBody CustomerJsonRequestDTO dto) {
+        log.info("PUT /api/v1/customers/{} (json)", customerId);
+        CustomerResponseDTO response = customerService.updateCustomerFromJson(customerId, dto);
+        return ResponseEntity.ok(response);
+    }
+
     @DeleteMapping("/{customerId}")
-    public ResponseEntity<Void> deleteCustomer(
+    public ResponseEntity<String> deleteCustomer(
             @PathVariable @Pattern(regexp = CUSTOMER_ID_REGEXP, message = "Customer ID must be 6-10 alphanumeric characters") String customerId) {
         log.info("DELETE /api/v1/customers/{}", customerId);
         customerService.deleteCustomer(customerId);
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.ok("Delete success");
     }
 
     @GetMapping("/{customerId}")

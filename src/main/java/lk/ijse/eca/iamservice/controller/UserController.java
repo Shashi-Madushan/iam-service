@@ -93,7 +93,7 @@ public class UserController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteUser(
+    public ResponseEntity<String> deleteUser(
             @PathVariable String id) {
         log.info("DELETE /api/v1/users/{}", id);
         
@@ -101,10 +101,10 @@ public class UserController {
         try {
             Long userId = Long.parseLong(id);
             userService.deleteUser(userId);
-            return ResponseEntity.noContent().build();
+            return ResponseEntity.ok("Delete success");
         } catch (NumberFormatException e) {
             log.warn("Invalid user ID format: {}", id);
-            return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).build();
+            return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body("Invalid user ID format");
         }
     }
 

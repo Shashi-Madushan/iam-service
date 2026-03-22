@@ -20,9 +20,11 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Base64;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import lk.ijse.eca.iamservice.dto.CustomerJsonRequestDTO;
 
 @Service
 @RequiredArgsConstructor
@@ -40,11 +42,13 @@ public class CustomerServiceImpl implements CustomerService {
     @Override
     @Transactional
     public CustomerResponseDTO createCustomer(CustomerRequestDTO dto) {
-        log.debug("Creating customer with ID: {}", dto.getCustomerId());
+        String providedId = dto.getCustomerId();
+        log.debug("Creating customer with provided ID: {}", providedId);
 
-        if (customerRepository.existsById(dto.getCustomerId())) {
-            log.warn("Duplicate customer ID detected: {}", dto.getCustomerId());
-            throw new DuplicateCustomerException(dto.getCustomerId());
+        // Check for duplicate only if ID is provided
+        if (providedId != null && !providedId.isEmpty() && customerRepository.existsById(providedId)) {
+            log.warn("Duplicate customer ID detected: {}", providedId);
+            throw new DuplicateCustomerException(providedId);
         }
 
         String pictureId = UUID.randomUUID().toString();
@@ -53,11 +57,11 @@ public class CustomerServiceImpl implements CustomerService {
         customer.setPicture(pictureId);
 
         customerRepository.save(customer);
-        log.debug("Customer persisted to DB: {}", dto.getCustomerId());
+        log.debug("Customer persisted to DB with ID: {}", customer.getCustomerId());
 
         savePicture(pictureId, dto.getPicture());
 
-        log.info("Customer created successfully: {}", dto.getCustomerId());
+        log.info("Customer created successfully: {}", customer.getCustomerId());
         return customerMapper.toResponseDto(customer);
     }
 
@@ -88,6 +92,82 @@ public class CustomerServiceImpl implements CustomerService {
         }
 
         log.info("Customer updated successfully: {}", customerId);
+        return customerMapper.toResponseDto(customer);
+    }
+
+    @Override
+    @Transactional
+    public CustomerResponseDTO createCustomerFromJson(CustomerJsonRequestDTO dto) {
+        String providedId = dto.getCustomerId();
+        log.debug("Creating customer from JSON with ID: {}", providedId);
+
+        // Check for duplicate only if ID is provided
+        if (providedId != null && !providedId.isEmpty() && customerRepository.existsById(providedId)) {
+            log.warn("Duplicate customer ID detected: {}", providedId);
+            throw new DuplicateCustomerException(providedId);
+        }
+
+        String pictureId = UUID.randomUUID().toString();
+
+        Customer customer = new Customer();
+        if (providedId != null && !providedId.isEmpty()) {
+            customer.setCustomerId(providedId);
+        }
+        customer.setName(dto.getName());
+        customer.setAddress(dto.getAddress());
+        customer.setMobile(dto.getMobile());
+        customer.setEmail(dto.getEmail());
+        customer.setCustomerType(dto.getCustomerType());
+        customer.setLoyaltyPoints(dto.getLoyaltyPoints());
+        customer.setPreferredPaymentMethod(dto.getPreferredPaymentMethod());
+        customer.setTotalPurchases(dto.getTotalPurchases());
+        customer.setPicture(pictureId);
+
+        customerRepository.save(customer);
+        log.debug("Customer persisted to DB with ID: {}", customer.getCustomerId());
+
+        if (dto.getPicture() != null && !dto.getPicture().isEmpty()) {
+            saveBase64Picture(pictureId, dto.getPicture());
+        }
+
+        log.info("Customer created successfully from JSON: {}", customer.getCustomerId());
+        return customerMapper.toResponseDto(customer);
+    }
+
+    @Override
+    @Transactional
+    public CustomerResponseDTO updateCustomerFromJson(String customerId, CustomerJsonRequestDTO dto) {
+        log.debug("Updating customer from JSON with ID: {}", customerId);
+
+        Customer customer = customerRepository.findById(customerId)
+                .orElseThrow(() -> {
+                    log.warn("Customer not found for update: {}", customerId);
+                    return new CustomerNotFoundException(customerId);
+                });
+
+        String oldPictureId = customer.getPicture();
+        boolean pictureChanged = dto.getPicture() != null && !dto.getPicture().isEmpty();
+        String newPictureId = pictureChanged ? UUID.randomUUID().toString() : oldPictureId;
+
+        if (dto.getName() != null) customer.setName(dto.getName());
+        if (dto.getAddress() != null) customer.setAddress(dto.getAddress());
+        if (dto.getMobile() != null) customer.setMobile(dto.getMobile());
+        if (dto.getEmail() != null) customer.setEmail(dto.getEmail());
+        if (dto.getCustomerType() != null) customer.setCustomerType(dto.getCustomerType());
+        if (dto.getLoyaltyPoints() != null) customer.setLoyaltyPoints(dto.getLoyaltyPoints());
+        if (dto.getPreferredPaymentMethod() != null) customer.setPreferredPaymentMethod(dto.getPreferredPaymentMethod());
+        if (dto.getTotalPurchases() != null) customer.setTotalPurchases(dto.getTotalPurchases());
+        customer.setPicture(newPictureId);
+
+        customerRepository.save(customer);
+        log.debug("Customer updated in DB: {}", customerId);
+
+        if (pictureChanged) {
+            saveBase64Picture(newPictureId, dto.getPicture());
+            tryDeletePicture(oldPictureId);
+        }
+
+        log.info("Customer updated successfully from JSON: {}", customerId);
         return customerMapper.toResponseDto(customer);
     }
 
@@ -202,6 +282,24 @@ public class CustomerServiceImpl implements CustomerService {
         customer.setTotalPurchases(customer.getTotalPurchases() + purchaseAmount);
         customerRepository.save(customer);
         log.info("Total purchases updated for customer {}: {}", customerId, customer.getTotalPurchases());
+    }
+
+    private void saveBase64Picture(String pictureId, String base64Data) {
+        if (base64Data == null || base64Data.isEmpty()) {
+            return;
+        }
+        try {
+            byte[] decoded = Base64.getDecoder().decode(base64Data);
+            Path filePath = storagePath().resolve(pictureId);
+            Files.write(filePath, decoded);
+            log.debug("Base64 picture saved: {}", filePath);
+        } catch (IllegalArgumentException e) {
+            log.error("Invalid base64 data: {}", e.getMessage());
+            throw new FileOperationException("Invalid base64 picture data", e);
+        } catch (IOException e) {
+            log.error("Failed to save base64 picture: {}", pictureId, e);
+            throw new FileOperationException("Failed to save picture file: " + pictureId, e);
+        }
     }
 
     private Path storagePath() {

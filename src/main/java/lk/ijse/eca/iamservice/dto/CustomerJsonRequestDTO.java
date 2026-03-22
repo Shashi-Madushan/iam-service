@@ -6,14 +6,12 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Min;
 import lk.ijse.eca.iamservice.entity.Customer;
-import lk.ijse.eca.iamservice.validation.ValidImage;
 import lombok.Getter;
 import lombok.Setter;
-import org.springframework.web.multipart.MultipartFile;
 
 @Getter
 @Setter
-public class CustomerRequestDTO {
+public class CustomerJsonRequestDTO {
 
     public interface OnCreate {}
 
@@ -33,8 +31,7 @@ public class CustomerRequestDTO {
     @Email(message = "Invalid email format")
     private String email;
 
-    @ValidImage
-    private MultipartFile picture;
+    private String picture;
 
     @NotNull(message = "Customer type is required")
     private Customer.CustomerType customerType;
