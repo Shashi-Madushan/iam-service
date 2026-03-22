@@ -43,10 +43,18 @@ public class UserController {
 
     @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<UserResponseDTO> getUser(
-            @PathVariable Long id) {
+            @PathVariable String id) {
         log.info("GET /api/v1/users/{}", id);
-        UserResponseDTO response = userService.getUser(id);
-        return ResponseEntity.ok(response);
+        
+        // Validate that ID is numeric
+        try {
+            Long userId = Long.parseLong(id);
+            UserResponseDTO response = userService.getUser(userId);
+            return ResponseEntity.ok(response);
+        } catch (NumberFormatException e) {
+            log.warn("Invalid user ID format: {}", id);
+            return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).build();
+        }
     }
 
     @GetMapping(value = "/username/{username}", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -70,19 +78,35 @@ public class UserController {
             produces = MediaType.APPLICATION_JSON_VALUE
     )
     public ResponseEntity<UserResponseDTO> updateUser(
-            @PathVariable Long id,
+            @PathVariable String id,
             @Valid @RequestBody UserRequestDTO dto) {
         log.info("PUT /api/v1/users/{}", id);
-        UserResponseDTO response = userService.updateUser(id, dto);
-        return ResponseEntity.ok(response);
+        
+        // Validate that ID is numeric
+        try {
+            Long userId = Long.parseLong(id);
+            UserResponseDTO response = userService.updateUser(userId, dto);
+            return ResponseEntity.ok(response);
+        } catch (NumberFormatException e) {
+            log.warn("Invalid user ID format: {}", id);
+            return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).build();
+        }
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteUser(
-            @PathVariable Long id) {
+            @PathVariable String id) {
         log.info("DELETE /api/v1/users/{}", id);
-        userService.deleteUser(id);
-        return ResponseEntity.noContent().build();
+        
+        // Validate that ID is numeric
+        try {
+            Long userId = Long.parseLong(id);
+            userService.deleteUser(userId);
+            return ResponseEntity.noContent().build();
+        } catch (NumberFormatException e) {
+            log.warn("Invalid user ID format: {}", id);
+            return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).build();
+        }
     }
 
     @GetMapping(value = "/type/{userType}", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -151,19 +175,35 @@ public class UserController {
 
     @PutMapping("/{id}/status")
     public ResponseEntity<Void> updateUserStatus(
-            @PathVariable Long id,
+            @PathVariable String id,
             @RequestParam User.UserStatus status) {
         log.info("PUT /api/v1/users/{}/status?status={}", id, status);
-        userService.updateUserStatus(id, status);
-        return ResponseEntity.ok().build();
+        
+        // Validate that ID is numeric
+        try {
+            Long userId = Long.parseLong(id);
+            userService.updateUserStatus(userId, status);
+            return ResponseEntity.ok().build();
+        } catch (NumberFormatException e) {
+            log.warn("Invalid user ID format: {}", id);
+            return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).build();
+        }
     }
 
     @PutMapping("/{id}/login")
     public ResponseEntity<Void> recordUserLogin(
-            @PathVariable Long id) {
+            @PathVariable String id) {
         log.info("PUT /api/v1/users/{}/login", id);
-        userService.recordUserLogin(id);
-        return ResponseEntity.ok().build();
+        
+        // Validate that ID is numeric
+        try {
+            Long userId = Long.parseLong(id);
+            userService.recordUserLogin(userId);
+            return ResponseEntity.ok().build();
+        } catch (NumberFormatException e) {
+            log.warn("Invalid user ID format: {}", id);
+            return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).build();
+        }
     }
 
     @GetMapping(value = "/stats/type/{userType}", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -200,11 +240,19 @@ public class UserController {
 
     @PutMapping("/{id}/password")
     public ResponseEntity<Void> changePassword(
-            @PathVariable Long id,
+            @PathVariable String id,
             @RequestParam String oldPassword,
             @RequestParam String newPassword) {
         log.info("PUT /api/v1/users/{}/password", id);
-        userService.changePassword(id, oldPassword, newPassword);
-        return ResponseEntity.ok().build();
+        
+        // Validate that ID is numeric
+        try {
+            Long userId = Long.parseLong(id);
+            userService.changePassword(userId, oldPassword, newPassword);
+            return ResponseEntity.ok().build();
+        } catch (NumberFormatException e) {
+            log.warn("Invalid user ID format: {}", id);
+            return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).build();
+        }
     }
 }

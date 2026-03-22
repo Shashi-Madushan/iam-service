@@ -280,14 +280,35 @@ test_user_endpoints() {
     }'
     
     # Via API Gateway
-    if make_request "POST" \
-        "$API_GATEWAY/api/v1/users" \
-        "201" \
-        "$user_json" \
-        "application/json"; then
+    local user_response
+    user_response=$(curl -s -X POST "$API_GATEWAY/api/v1/users" \
+        -H "Content-Type: application/json" \
+        -d "$user_json")
+    
+    local http_code
+    http_code=$(curl -s -o /dev/null -w "%{http_code}" -X POST "$API_GATEWAY/api/v1/users" \
+        -H "Content-Type: application/json" \
+        -d "$user_json")
+    
+    if [[ "$http_code" == "201" ]]; then
         USER_CREATED=true
+        # Extract the actual user ID from response
+        ACTUAL_USER_ID=$(echo "$user_response" | jq -r '.id // empty')
+        if [[ -n "$ACTUAL_USER_ID" && "$ACTUAL_USER_ID" != "null" ]]; then
+            log_success "User created with ID: $ACTUAL_USER_ID"
+        else
+            log_warn "Could not extract user ID from response, using fallback"
+            # Fallback: get the user by username to find ID
+            ACTUAL_USER_ID=$(curl -s -X GET "$API_GATEWAY/api/v1/users/username/$TEST_USERNAME" | jq -r '.id // empty')
+            if [[ -n "$ACTUAL_USER_ID" && "$ACTUAL_USER_ID" != "null" ]]; then
+                log_success "Found user ID by username: $ACTUAL_USER_ID"
+            else
+                log_warn "Could not determine user ID"
+                USER_CREATED=false
+            fi
+        fi
     else
-        log_warn "User creation failed - skipping dependent tests"
+        log_warn "User creation failed (HTTP $http_code) - skipping dependent tests"
     fi
     
     # --- GET All Users ---
@@ -298,7 +319,7 @@ test_user_endpoints() {
     if [[ "$USER_CREATED" == "true" ]]; then
         # --- GET User by ID ---
         log_info "Testing Get User by ID..."
-        make_request "GET" "$API_GATEWAY/api/v1/users/$TEST_USER_ID" "200"
+        make_request "GET" "$API_GATEWAY/api/v1/users/$ACTUAL_USER_ID" "200"
         
         # --- GET User by Username ---
         log_info "Testing Get User by Username..."
@@ -325,7 +346,7 @@ test_user_endpoints() {
         }'
         
         make_request "PUT" \
-            "$API_GATEWAY/api/v1/users/$TEST_USER_ID" \
+            "$API_GATEWAY/api/v1/users/$ACTUAL_USER_ID" \
             "200" \
             "$update_json" \
             "application/json"
@@ -333,24 +354,24 @@ test_user_endpoints() {
         # --- UPDATE User Status ---
         log_info "Testing Update User Status..."
         make_request "PUT" \
-            "$API_GATEWAY/api/v1/users/$TEST_USER_ID/status?status=INACTIVE" \
+            "$API_GATEWAY/api/v1/users/$ACTUAL_USER_ID/status?status=INACTIVE" \
             "200"
         
         # --- RECORD User Login ---
         log_info "Testing Record User Login..."
         make_request "PUT" \
-            "$API_GATEWAY/api/v1/users/$TEST_USER_ID/login" \
+            "$API_GATEWAY/api/v1/users/$ACTUAL_USER_ID/login" \
             "200"
         
         # --- CHANGE Password ---
         log_info "Testing Change Password..."
         make_request "PUT" \
-            "$API_GATEWAY/api/v1/users/$TEST_USER_ID/password?oldPassword=password123&newPassword=newpass456" \
+            "$API_GATEWAY/api/v1/users/$ACTUAL_USER_ID/password?oldPassword=password123&newPassword=newpass456" \
             "200"
         
         # --- DELETE User ---
         log_info "Testing Delete User..."
-        make_request "DELETE" "$API_GATEWAY/api/v1/users/$TEST_USER_ID" "204"
+        make_request "DELETE" "$API_GATEWAY/api/v1/users/$ACTUAL_USER_ID" "204"
     else
         log_warn "Skipping user-dependent tests (creation failed)"
         
