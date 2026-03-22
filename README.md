@@ -1,17 +1,18 @@
-# Customer Management Service
+# Identity and Access Management (IAM) Service
 
-A comprehensive Spring Boot microservice for managing customers and users in a retail POS system. This service handles customer registration, user management, loyalty programs, and provides RESTful APIs for integration with other system components.
+A comprehensive Spring Boot microservice for managing identities, authentication, and access control in a retail POS system. This service handles user accounts, roles, permissions, and provides secure RESTful APIs for integration with other system components.
 
 ## 📋 Project Description
 
-The Customer Management Service is a core component of a microservices-based retail Point of Sale (POS) system. It provides robust functionality for managing customer profiles, user accounts, and loyalty programs. The service is built using Spring Boot with Spring Cloud for microservice architecture, featuring JPA for data persistence, Spring Security for authentication, and comprehensive validation mechanisms.
+The IAM Service is a core component of a microservices-based retail Point of Sale (POS) system. It provides robust functionality for managing user identities, authentication, authorization, and access control. The service is built using Spring Boot with Spring Cloud for microservice architecture, featuring JPA for data persistence, Spring Security for authentication, and comprehensive validation mechanisms.
 
 ### Key Features
 
-- **Customer Management**: Complete CRUD operations for customer profiles with image upload support
 - **User Management**: Comprehensive user account management with role-based access control
-- **Lalty Program**: Built-in loyalty points system and purchase tracking
-- **File Management**: Customer profile picture upload and retrieval
+- **Authentication**: Secure user authentication with password management
+- **Authorization**: Role-based access control (RBAC) for system resources
+- **User Profiles**: Complete user profile management with contact information
+- **Account Lifecycle**: User account creation, activation, suspension, and deletion
 - **Advanced Search**: Multiple search and filtering capabilities
 - **Pagination**: Efficient data retrieval with pagination support
 - **Validation**: Comprehensive input validation and error handling
@@ -27,7 +28,7 @@ The Customer Management Service is a core component of a microservices-based ret
 - **Spring Validation**: Input validation framework
 
 ### Database & Persistence
-- **MySQL**: Primary database for customer and user data
+- **MySQL**: Primary database for user and identity data
 - **Spring Boot Data JPA**: ORM and database operations
 - **Hibernate**: JPA implementation
 
@@ -59,14 +60,14 @@ The Customer Management Service is a core component of a microservices-based ret
 1. **Clone the Repository**
    ```bash
    git clone <repository-url>
-   cd Project-Services/customer-service
+   cd Project-Services/iam-service
    ```
 
 2. **Database Setup**
    ```sql
-   CREATE DATABASE customer_management_db;
-   CREATE USER 'customer_user'@'localhost' IDENTIFIED BY 'password';
-   GRANT ALL PRIVILEGES ON customer_management_db.* TO 'customer_user'@'localhost';
+   CREATE DATABASE db_iam;
+   CREATE USER 'iam_user'@'localhost' IDENTIFIED BY 'password';
+   GRANT ALL PRIVILEGES ON db_iam.* TO 'iam_user'@'localhost';
    FLUSH PRIVILEGES;
    ```
 
@@ -91,38 +92,23 @@ The Customer Management Service is a core component of a microservices-based ret
    ```
 
 6. **Verify Service**
-   - The service will start on port 8080 (or as configured)
-   - Health check endpoint: `http://localhost:8080/actuator/health`
+   - The service will start on a dynamic port (registered with Eureka)
+   - Health check endpoint: `http://localhost:{port}/actuator/health`
 
 ### Docker Setup (Optional)
 
 ```bash
 # Build Docker image
-docker build -t customer-service .
+docker build -t iam-service .
 
 # Run with Docker
 docker run -p 8080:8080 \
   -e SPRING_PROFILES_ACTIVE=dev \
   -e SPRING_CLOUD_CONFIG_URI=http://config-server:9000 \
-  customer-service
+  iam-service
 ```
 
 ## 📚 API Endpoints
-
-### Customer Management Endpoints
-
-| Method | Endpoint | Description | Request Type |
-|--------|----------|-------------|--------------|
-| POST | `/api/v1/customers` | Create new customer | `multipart/form-data` |
-| GET | `/api/v1/customers` | Get all customers | - |
-| GET | `/api/v1/customers/{customerId}` | Get customer by ID | - |
-| PUT | `/api/v1/customers/{customerId}` | Update customer | `multipart/form-data` |
-| DELETE | `/api/v1/customers/{customerId}` | Delete customer | - |
-| GET | `/api/v1/customers/type/{customerType}` | Get customers by type | - |
-| GET | `/api/v1/customers/loyalty/top` | Get top loyalty customers | - |
-| GET | `/api/v1/customers/{customerId}/picture` | Get customer picture | - |
-| PUT | `/api/v1/customers/{customerId}/loyalty` | Update loyalty points | - |
-| PUT | `/api/v1/customers/{customerId}/purchases` | Update total purchases | - |
 
 ### User Management Endpoints
 
@@ -147,10 +133,6 @@ docker run -p 8080:8080 \
 | GET | `/api/v1/users/stats/status/{status}` | Get user count by status | - |
 | GET | `/api/v1/users/exists/username/{username}` | Check if username exists | - |
 | GET | `/api/v1/users/exists/email/{email}` | Check if email exists | - |
-
-### Customer Types
-- `REGULAR` - Standard customers
-- `PREMIUM` - Premium customers with additional benefits
 
 ### User Types
 - `EMPLOYEE` - System employees
@@ -182,26 +164,19 @@ chmod +x test-endpoints.sh
 
 The test script covers:
 
-1. **Customer Controller Tests**
-   - Customer creation with image upload
-   - Customer retrieval operations
-   - Customer updates and deletions
-   - Loyalty points and purchase tracking
-   - Picture upload and retrieval
-
-2. **User Controller Tests**
+1. **User Controller Tests**
    - User creation and management
    - Authentication operations
    - Search and filtering
    - Pagination
    - Statistics and reporting
 
-3. **Edge Case Tests**
+2. **Edge Case Tests**
    - Invalid ID formats
    - Not found scenarios
    - Validation errors
 
-4. **Health Checks**
+3. **Health Checks**
    - Service connectivity
    - API Gateway accessibility
 
@@ -212,18 +187,6 @@ The test script covers:
 - **Results**: Color-coded output with pass/fail summary
 
 ### Manual Testing Examples
-
-#### Create Customer
-```bash
-curl -X POST "http://localhost:7001/api/v1/customers" \
-  -F "customerId=CUST123456" \
-  -F "name=John Doe" \
-  -F "address=123 Main St" \
-  -F "mobile=1234567890" \
-  -F "email=john@example.com" \
-  -F "customerType=REGULAR" \
-  -F "picture=@customer_photo.jpg"
-```
 
 #### Create User
 ```bash
@@ -245,48 +208,36 @@ curl -X POST "http://localhost:7001/api/v1/users" \
 ## 🏗 Project Structure
 
 ```
-customer-service/
-├── src/main/java/lk/ijse/eca/customerservice/
+iam-service/
+├── src/main/java/lk/ijse/eca/iamservice/
 │   ├── controller/          # REST API Controllers
-│   │   ├── CustomerController.java
 │   │   └── UserController.java
 │   ├── dto/                 # Data Transfer Objects
-│   │   ├── CustomerRequestDTO.java
-│   │   ├── CustomerResponseDTO.java
 │   │   ├── UserRequestDTO.java
 │   │   └── UserResponseDTO.java
 │   ├── entity/              # JPA Entities
-│   │   ├── Customer.java
 │   │   └── User.java
 │   ├── exception/           # Custom Exceptions
-│   │   ├── CustomerNotFoundException.java
-│   │   ├── DuplicateCustomerException.java
 │   │   ├── UserNotFoundException.java
 │   │   └── DuplicateUserException.java
 │   ├── repository/          # JPA Repositories
-│   │   ├── CustomerRepository.java
 │   │   └── UserRepository.java
 │   ├── service/             # Service Layer
-│   │   ├── CustomerService.java
 │   │   ├── UserService.java
-│   │   ├── impl/
-│   │   │   ├── CustomerServiceImpl.java
-│   │   │   └── UserServiceImpl.java
+│   │   └── impl/
+│   │       └── UserServiceImpl.java
 │   ├── mapper/              # MapStruct Mappers
-│   │   ├── CustomerMapper.java
 │   │   └── UserMapper.java
 │   ├── config/              # Configuration Classes
 │   │   └── SecurityConfig.java
 │   ├── validation/          # Custom Validators
-│   │   ├── ValidImage.java
-│   │   └── ValidImageValidator.java
 │   ├── handler/             # Exception Handlers
 │   │   └── GlobalExceptionHandler.java
-│   └── CustomerManagementServiceApplication.java
+│   └── IamServiceApplication.java
 ├── src/main/resources/
 │   ├── application.yaml
 │   ├── application-dev.yaml
-│   └── uploads/customers/   # File storage directory
+│   └── uploads/             # File storage directory
 ├── test-endpoints.sh        # Comprehensive test script
 ├── pom.xml                  # Maven configuration
 └── README.md               # This file
@@ -301,7 +252,7 @@ Key configuration options:
 ```yaml
 spring:
   application:
-    name: customer-service
+    name: iam-service
   profiles:
     active: dev
   config:
@@ -312,7 +263,7 @@ spring:
 
 app:
   storage:
-    path: ./uploads/customers
+    path: ./uploads
 ```
 
 ### Environment Variables
@@ -350,7 +301,7 @@ app:
 
 - **Student Name**: Shashi Madushan
 - **Student Number**: 2301691002
-- **Project**: Customer Management Service for Retail POS System
+- **Project**: IAM Service for Retail POS System
 - **Course**: Enterprise Computing Architecture
 
 ## 📄 License

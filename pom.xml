@@ -10,9 +10,9 @@
     </parent>
 
     <groupId>lk.ijse.eca</groupId>
-    <artifactId>customer-service</artifactId>
+    <artifactId>iam-service</artifactId>
     <version>1.0.0</version>
-    <name>customer-service</name>
+    <name>iam-service</name>
     <description>Customer Management Service for Retail POS System</description>
 
     <properties>
