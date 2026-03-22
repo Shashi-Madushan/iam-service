@@ -173,7 +173,7 @@ public class UserController {
     }
 
     @PutMapping("/{id}/status")
-    public ResponseEntity<Void> updateUserStatus(
+    public ResponseEntity<String> updateUserStatus(
             @PathVariable String id,
             @RequestParam User.UserStatus status) {
         log.info("PUT /api/v1/users/{}/status?status={}", id, status);
@@ -182,15 +182,15 @@ public class UserController {
         try {
             Long userId = Long.parseLong(id);
             userService.updateUserStatus(userId, status);
-            return ResponseEntity.ok().build();
+            return ResponseEntity.ok("User status updated successfully");
         } catch (NumberFormatException e) {
             log.warn("Invalid user ID format: {}", id);
-            return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).build();
+            return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body("Invalid user ID format");
         }
     }
 
     @PutMapping("/{id}/login")
-    public ResponseEntity<Void> recordUserLogin(
+    public ResponseEntity<String> recordUserLogin(
             @PathVariable String id) {
         log.info("PUT /api/v1/users/{}/login", id);
         
@@ -198,10 +198,10 @@ public class UserController {
         try {
             Long userId = Long.parseLong(id);
             userService.recordUserLogin(userId);
-            return ResponseEntity.ok().build();
+            return ResponseEntity.ok("User login recorded successfully");
         } catch (NumberFormatException e) {
             log.warn("Invalid user ID format: {}", id);
-            return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).build();
+            return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body("Invalid user ID format");
         }
     }
 
@@ -238,7 +238,7 @@ public class UserController {
     }
 
     @PutMapping("/{id}/password")
-    public ResponseEntity<Void> changePassword(
+    public ResponseEntity<String> changePassword(
             @PathVariable String id,
             @RequestParam String oldPassword,
             @RequestParam String newPassword) {
@@ -248,10 +248,10 @@ public class UserController {
         try {
             Long userId = Long.parseLong(id);
             userService.changePassword(userId, oldPassword, newPassword);
-            return ResponseEntity.ok().build();
+            return ResponseEntity.ok("Password changed successfully");
         } catch (NumberFormatException e) {
             log.warn("Invalid user ID format: {}", id);
-            return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).build();
+            return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body("Invalid user ID format");
         }
     }
 }

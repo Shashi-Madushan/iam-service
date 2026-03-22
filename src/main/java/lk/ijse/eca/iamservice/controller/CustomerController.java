@@ -114,20 +114,20 @@ public class CustomerController {
     }
 
     @PutMapping("/{customerId}/loyalty")
-    public ResponseEntity<Void> updateLoyaltyPoints(
+    public ResponseEntity<String> updateLoyaltyPoints(
             @PathVariable @Pattern(regexp = CUSTOMER_ID_REGEXP, message = "Customer ID must be 6-10 alphanumeric characters") String customerId,
             @RequestParam @Min(value = 1, message = "Points to add must be positive") Integer pointsToAdd) {
         log.info("PUT /api/v1/customers/{}/loyalty?pointsToAdd={}", customerId, pointsToAdd);
         customerService.updateLoyaltyPoints(customerId, pointsToAdd);
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok("Loyalty points updated successfully");
     }
 
     @PutMapping("/{customerId}/purchases")
-    public ResponseEntity<Void> updateTotalPurchases(
+    public ResponseEntity<String> updateTotalPurchases(
             @PathVariable @Pattern(regexp = CUSTOMER_ID_REGEXP, message = "Customer ID must be 6-10 alphanumeric characters") String customerId,
             @RequestParam @Min(value = 1, message = "Purchase amount must be positive") Double purchaseAmount) {
         log.info("PUT /api/v1/customers/{}/purchases?purchaseAmount={}", customerId, purchaseAmount);
         customerService.updateTotalPurchases(customerId, purchaseAmount);
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok("Total purchases updated successfully");
     }
 }
