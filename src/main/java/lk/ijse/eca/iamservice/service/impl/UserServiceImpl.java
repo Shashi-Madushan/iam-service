@@ -4,6 +4,7 @@ import lk.ijse.eca.iamservice.dto.UserRequestDTO;
 import lk.ijse.eca.iamservice.dto.UserResponseDTO;
 import lk.ijse.eca.iamservice.entity.User;
 import lk.ijse.eca.iamservice.exception.DuplicateUserException;
+import lk.ijse.eca.iamservice.exception.InvalidCredentialsException;
 import lk.ijse.eca.iamservice.exception.UserNotFoundException;
 import lk.ijse.eca.iamservice.mapper.UserMapper;
 import lk.ijse.eca.iamservice.repository.UserRepository;
@@ -74,6 +75,37 @@ public class UserServiceImpl implements UserService {
                     log.warn("User not found by username: {}", username);
                     return new UserNotFoundException("User not found with username: " + username);
                 });
+    }
+
+    @Override
+    public UserResponseDTO authenticateAdmin(String username, String password) {
+        log.debug("Authenticating admin user: {}", username);
+
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> {
+                    log.warn("Authentication failed. User not found: {}", username);
+                    return new InvalidCredentialsException("Invalid username or password");
+                });
+
+        if (user.getUserType() != User.UserType.ADMIN) {
+            log.warn("Authentication denied. User is not admin: {}", username);
+            throw new InvalidCredentialsException("Admin access required");
+        }
+
+        if (user.getStatus() != User.UserStatus.ACTIVE) {
+            log.warn("Authentication denied. Admin account inactive: {}", username);
+            throw new InvalidCredentialsException("Admin account is not active");
+        }
+
+        if (!passwordEncoder.matches(password, user.getPassword())) {
+            log.warn("Authentication failed. Password mismatch for user: {}", username);
+            throw new InvalidCredentialsException("Invalid username or password");
+        }
+
+        user.setLastLogin(LocalDateTime.now());
+        User saved = userRepository.save(user);
+        log.info("Admin authenticated successfully: {}", username);
+        return userMapper.toDtoWithoutPassword(saved);
     }
 
     @Override

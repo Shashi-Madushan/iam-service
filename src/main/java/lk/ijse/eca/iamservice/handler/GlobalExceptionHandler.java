@@ -5,6 +5,7 @@ import jakarta.validation.ConstraintViolationException;
 import lk.ijse.eca.iamservice.exception.DuplicateCustomerException;
 import lk.ijse.eca.iamservice.exception.DuplicateUserException;
 import lk.ijse.eca.iamservice.exception.CustomerNotFoundException;
+import lk.ijse.eca.iamservice.exception.InvalidCredentialsException;
 import lk.ijse.eca.iamservice.exception.UserNotFoundException;
 import lk.ijse.eca.iamservice.exception.FileOperationException;
 import lombok.extern.slf4j.Slf4j;
@@ -78,6 +79,18 @@ public class GlobalExceptionHandler {
                 request.getRequestURI());
         return problemResponse(HttpStatus.CONFLICT, problem);
     }
+
+        @ExceptionHandler(InvalidCredentialsException.class)
+        public ResponseEntity<ProblemDetail> handleInvalidCredentials(
+                        InvalidCredentialsException ex, HttpServletRequest request) {
+                log.warn("Invalid credentials: {}", ex.getMessage());
+                ProblemDetail problem = buildProblemDetail(
+                                HttpStatus.UNAUTHORIZED,
+                                "Authentication Failed",
+                                ex.getMessage(),
+                                request.getRequestURI());
+                return problemResponse(HttpStatus.UNAUTHORIZED, problem);
+        }
 
     @ExceptionHandler(FileOperationException.class)
     public ResponseEntity<ProblemDetail> handleFileOperation(

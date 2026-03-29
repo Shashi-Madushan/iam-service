@@ -2,6 +2,7 @@ package lk.ijse.eca.iamservice.controller;
 
 import jakarta.validation.Valid;
 import jakarta.validation.groups.Default;
+import lk.ijse.eca.iamservice.dto.AdminLoginRequestDTO;
 import lk.ijse.eca.iamservice.dto.UserRequestDTO;
 import lk.ijse.eca.iamservice.dto.UserResponseDTO;
 import lk.ijse.eca.iamservice.entity.User;
@@ -38,6 +39,17 @@ public class UserController {
         log.info("POST /api/v1/users - username: {}", dto.getUsername());
         UserResponseDTO response = userService.createUser(dto);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
+
+    @PostMapping(
+            value = "/admin/login",
+            consumes = MediaType.APPLICATION_JSON_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE
+    )
+    public ResponseEntity<UserResponseDTO> adminLogin(@Valid @RequestBody AdminLoginRequestDTO dto) {
+        log.info("POST /api/v1/users/admin/login - username: {}", dto.getUsername());
+        UserResponseDTO response = userService.authenticateAdmin(dto.getUsername(), dto.getPassword());
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)

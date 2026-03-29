@@ -16,6 +16,8 @@ public interface UserService {
 
     UserResponseDTO getUserByUsername(String username);
 
+    UserResponseDTO authenticateAdmin(String username, String password);
+
     UserResponseDTO updateUser(Long id, UserRequestDTO dto);
 
     void deleteUser(Long id);
